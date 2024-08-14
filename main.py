@@ -106,15 +106,6 @@ def image_overlay(image, warped_img, t):
 
     # Назначаем альфа-канал
     alpha_channel = image[:, :, 3] / 255.0  # Преобразуем 0-255 в 0-1
-    # cnt = 0
-    # for line in alpha_channel:
-    #     for col in line:
-    #         if col < 1 and col > 0:
-    #             cnt += 1
-    #             # print(f"undo {col=}")
-    #             col = 0
-    #             # print(f"after{col=}", "\n")
-    # print(f"{cnt=}")
 
     # image = transparent_edges()
 
@@ -129,44 +120,34 @@ def image_overlay(image, warped_img, t):
                 (1 - alpha_channel) * warped_img[t[1]:h1 + t[1], t[0]:w1 + t[0], c]
         )
     # print(warped_img2.shape)
-    cv2.imshow("Panorama", warped_img)
-    cv2.waitKey(0)
-    cv2.destroyAllWindows()
+    # cv2.imshow("Panorama", warped_img)
+    # cv2.waitKey(0)
+    # cv2.destroyAllWindows()
 
     return warped_img
 
 
 
-path_video = 'C:\\My\\Projects\\images\\move4.mp4'
+path_video = 'C:\\My\\Projects\\images\\Bol2.mp4'
 cap = cv2.VideoCapture(path_video)
 pano = []
 image_prev = []
 image_new = []
 frame_count = 0  # int(cap.get(cv.CAP_PROP_FPS))
-t_all = [0, 0]
-# im_list = []
+# t_all = [0, 0]
+stitcher = cv2.Stitcher.create(cv2.Stitcher_SCANS)
 
 while cap.isOpened():
     frame_count += 1
     ret, frame = cap.read()
+
     if not ret:
         print("Конец видеофайла.")
         break
-    if frame_count == 50:
+    if frame_count == 120:
         frame_count = 0
         frame = cv2.resize(frame, (1024, 576))
-
-        # cv2.imshow("frame undo", frame)
-        # cv2.waitKey(0)
-        # cv2.destroyAllWindows()
-
         # frame = frame[int(480/4):int(480-480/4), int(854/6):int(854-854/6)]
-
-        # cv2.imshow("frame after", frame)
-        # cv2.waitKey(0)
-        # cv2.destroyAllWindows()
-
-        # im_list.append(frame)
 
         frame = cv2.cvtColor(frame, cv2.COLOR_BGR2BGRA)
         # frame = rgba_to_grayscale_with_alpha(frame)
@@ -180,24 +161,6 @@ while cap.isOpened():
         image_new = frame.copy()
 
         print(f"---"*10)
-        # if len(im_list) == 3:
-        #     stitcher = cv2.Stitcher.create(cv2.Stitcher_SCANS)
-        #     # Сшивание изображений
-        #     status, pano = stitcher.stitch(im_list, cv2.Stitcher_SCANS)
-        #     if status == cv2.Stitcher_OK:
-        #         print("OK")
-        #         cv2.imwrite(f"panorama.png", pano)
-        #         im_list.clear()
-        #         im_list.append(pano)
-        #     else:
-        #         if status == cv2.Stitcher_ERR_NEED_MORE_IMGS:
-        #             print("Недостаточно изображений для сшивания.")
-        #         elif status == cv2.Stitcher_ERR_HOMOGRAPHY_EST_FAIL:
-        #             print("Ошибка при оценке гомографии.")
-        #         else:
-        #             print("Ошибка во время сшивания:", status)
-        #         break
-
 
         keypoints1, keypoints2, matches = detect_and_match_features(image_prev, image_new)
         print(f"kp1 {len(keypoints1)}, kp2 {len(keypoints2)}")
@@ -208,8 +171,7 @@ while cap.isOpened():
             continue
 
         image_new, t_add = warp_images(image_prev, image_new, H)
-        t_all = [t_all[i] + t_add[i] for i in range(2)]
-        print(f"{t_all=}")
+        # t_all = [t_all[i] + t_add[i] for i in range(2)]
 
         image_prev = image_new.copy()
 
